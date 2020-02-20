@@ -96,6 +96,6 @@ class Samplerun:
         merged = param_values.join(results)
 
         savepath = os.path.join(savedir, savefile)
-        merged.to_csv(savefile)
+        merged.to_csv(savepath)
 
         self.stop_container()
