@@ -60,13 +60,26 @@ class Domain:
         self.params = [FWT, FWAM, FWSM, FWCM, BSM, BBM,
                        BMM, BCM, BBEF, BBPF, BMPF, BMF, BBF, BSF]
         self.numparams = len(self.params)
+        self.fixed_params = {}
 
     def create_data_frame(self):
         return pd.DataFrame(
             columns=[param.name for param in self.params]
         )
 
+    def gen_param_values(self, param, strategy, num):
+        if param.name in self.fixed_params:
+            return self.fixed_params[param.name]
+        else:
+            return param.gen(strategy, num)
+
     def gen_data_frame(self, strategy, num):
-        data = {param.name: param.gen(strategy, num)
+        data = {param.name: self.gen_param_values(param, strategy, num)
                 for param in self.params}
         return pd.DataFrame(data, columns=[param.name for param in self.params])
+
+    def fix_param(self, param, value):
+        self.fixed_params[param] = value
+
+    def unfix_param(self, param):
+        del self.fixed_params[param]
