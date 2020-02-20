@@ -4,6 +4,7 @@ import json
 import docker
 import pandas as pd
 import time
+import os
 
 from .param import Parameter
 
@@ -62,7 +63,7 @@ class Samplerun:
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
-    def perform_sample(self, savefile="default.csv", verb=True):
+    def perform_sample(self, savefile="default.csv", savedir="output/", verb=True):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
@@ -94,8 +95,7 @@ class Samplerun:
 
         merged = param_values.join(results)
 
-        savedir = "ATE/tests/output/"
-        savefile = savedir + savefile
+        savepath = os.path.join(savedir, savefile)
         merged.to_csv(savefile)
 
         self.stop_container()
