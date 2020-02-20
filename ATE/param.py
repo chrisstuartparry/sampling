@@ -24,6 +24,15 @@ class Parameter:
         else:
             return strategy.gen_continuous(self, num)
 
+    def transform_columns(self):
+        '''
+        Get column names for transformed representation.
+        '''
+        if self.discrete:
+            return ['%s_%s' % (self.name, val) for val in self.val]
+        else:
+            return [self.name]
+
 
 class Domain:
     '''
