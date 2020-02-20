@@ -19,6 +19,7 @@ class Samplerun:
         Collects sampling parameters
         '''
         assert (n_samples > 0), "Input error, nonpositive number of samples."
+
         self.n_samples = n_samples
         self.domain = domain
         self.sampling_strategy = sampling_strategy
@@ -31,10 +32,16 @@ class Samplerun:
         self.spin_up_time = spin_up_time
 
     def __del__(self):
+        '''
+        Clean up docker container when the object is deleted.
+        '''
         # ensure that no container is left dangling
         self.stop_container()
 
     def start_container(self):
+        '''
+        Start docker container with the TBR web service. Or attach to one if it's already running.
+        '''
         running_containers = [c for c in self.docker.containers.list()
                               if self.container_name in c.image.tags]
 
@@ -54,12 +61,20 @@ class Samplerun:
         time.sleep(self.spin_up_time)
 
     def stop_container(self):
-        if self.container is not None:
-            print('Stopping container %s' % self.container.id)
-            self.container.stop()
-            self.container = None
+        '''
+        Stop docker container if it is running.
+        '''
+        if self.container is None:
+            return
+
+        print('Stopping container %s' % self.container.id)
+        self.container.stop()
+        self.container = None
 
     def request_tbr(self, params):
+        '''
+        Query the TBR web service and parse its output.
+        '''
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
@@ -86,9 +101,9 @@ class Samplerun:
 
             if response is not None:
                 time_taken = toc - tic
-                results.iloc[i]['tbr',
-                                'tbr_error',
-                                'sim_time'] = response['tbr'], response['tbr_error'], time_taken
+                set_names = 'tbr', 'tbr_error', 'sim_time'
+                set_values = response['tbr'], response['tbr_error'], time_taken
+                results.iloc[i][set_names] = set_values
 
             if verb:
                 print(results.iloc[i]['tbr'])

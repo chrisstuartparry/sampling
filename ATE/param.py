@@ -16,6 +16,9 @@ class Parameter:
             self.discrete = True
 
     def gen(self, strategy, num):
+        '''
+        Generate requested number of values using the provided sampling strategy.
+        '''
         if self.discrete:
             return strategy.gen_discrete(self, num)
         else:
@@ -23,6 +26,10 @@ class Parameter:
 
 
 class Domain:
+    '''
+    Holds all parameters of the model.
+    '''
+
     def __init__(self):
         '''
         Generates array of input parameters for model in use.
@@ -63,23 +70,38 @@ class Domain:
         self.fixed_params = {}
 
     def create_data_frame(self):
+        '''
+        Create empty data frame with headers for all model parameters.
+        '''
         return pd.DataFrame(
             columns=[param.name for param in self.params]
         )
 
     def gen_param_values(self, param, strategy, num):
+        '''
+        Generate requested number of values for a single parameter using specified sampling strategy.
+        '''
         if param.name in self.fixed_params:
             return self.fixed_params[param.name]
         else:
             return param.gen(strategy, num)
 
     def gen_data_frame(self, strategy, num):
+        '''
+        Generate data frame containing requested number of rows using specified sampling strategy.
+        '''
         data = {param.name: self.gen_param_values(param, strategy, num)
                 for param in self.params}
         return pd.DataFrame(data, columns=[param.name for param in self.params])
 
     def fix_param(self, param, value):
+        '''
+        Fix model parameter to a constant value, overriding the sampling strategy.
+        '''
         self.fixed_params[param] = value
 
     def unfix_param(self, param):
+        '''
+        Undo parameter fixing, making it follow the sampling strategy again.
+        '''
         del self.fixed_params[param]
