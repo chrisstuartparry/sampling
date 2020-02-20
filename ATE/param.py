@@ -49,11 +49,11 @@ class Domain:
                          values=['tungsten'])
         FWSM = Parameter('firstwall_structural_material',
                          values=['SiC', 'eurofer'])
-        FWCM = Parameter('firstwall_coolant_material]',
+        FWCM = Parameter('firstwall_coolant_material',
                          values=['H2O', 'He', 'D2O'])
         BSM = Parameter('blanket_structural_material',
                         values=['SiC', 'eurofer'])
-        BBM = Parameter('blanket_breeder_material ',
+        BBM = Parameter('blanket_breeder_material',
                         values=['Li4SiO4', 'Li2TiO3'])
         BMM = Parameter('blanket_multiplier_material',
                         values=['Be', 'Be12Ti'])
