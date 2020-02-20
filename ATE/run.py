@@ -72,17 +72,22 @@ class Samplerun:
         results = pd.DataFrame(data={
             'tbr': [-1.] * self.numsamples,
             'tbr_error': [-1.] * self.numsamples,
+            'sim_time': [-1.] * self.numsamples
         })
 
         self.start_container()
 
         for i in range(self.numsamples):
             print("Performing sample %d of %d" % (i + 1, self.numsamples))
+            tic = time.time()
             response = self.request_tbr(param_values.iloc[i].to_dict())
+            toc = time.time()
 
             if response is not None:
+                time_taken = toc - tic
                 results.iloc[i]['tbr',
-                                'tbr_error'] = response['tbr'], response['tbr_error']
+                                'tbr_error',
+                                'sim_time'] = response['tbr'], response['tbr_error'], time_taken
 
             if verb:
                 print(results.iloc[i]['tbr'])
