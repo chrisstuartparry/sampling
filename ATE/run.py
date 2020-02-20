@@ -1,11 +1,9 @@
-import math
 import numpy as np
-import matplotlib.pyplot as plt
 import requests
 import json
-import csv
-import subprocess
-import os
+import docker
+import pandas as pd
+import time
 
 from .param import Parameter
 
@@ -15,92 +13,84 @@ class Samplerun:
     Holds sampling methods and data for TBR docker run.
     '''
 
-    def __init__(self, numsamples):
+    def __init__(self, numsamples, domain, sampling_strategy, port=8080, container_name="openmcworkshop/find-tbr:latest", spin_up_time=5):
         '''
         Collects sampling parameters
         '''
         assert (numsamples > 0), "Input error, nonpositive number of samples."
         self.numsamples = numsamples
-        self.params = []
-        self.paramvalues = np.matrix([])
+        self.domain = domain
+        self.sampling_strategy = sampling_strategy
         self.tbr = []
+        self.port = port
+        self.request_url = "http://localhost:%d/find_tbr_model_sphere_with_firstwall" % self.port
+        self.container_name = container_name
+        self.docker = docker.from_env()
+        self.container = None
+        self.spin_up_time = spin_up_time
 
-    def setup_model(self):
-        '''
-        Generates array of input parameters for model in use.
-        '''
-        FWT = Parameter('firstwall_thickness',
-                        valuerange=[0, 20])
-        FWAM = Parameter('firstwall_amour_material',
-                         values=['tungsten'])
-        FWSM = Parameter('firstwall_structural_material',
-                         values=['SiC', 'eurofer'])
-        FWCM = Parameter('firstwall_coolant_material]',
-                         values=['H2O', 'He', 'D2O'])
-        BSM = Parameter('blanket_structural_material',
-                        values=['SiC', 'eurofer'])
-        BBM = Parameter('blanket_breeder_material ',
-                        values=['Li4SiO4', 'Li2TiO3'])
-        BMM = Parameter('blanket_multiplier_material',
-                        values=['Be', 'Be12Ti'])
-        BCM = Parameter('blanket_coolant_material',
-                        values=['H2O', 'He', 'D2O'])
-        BBEF = Parameter(
-            'blanket_breeder_li6_enrichment_fraction', valuerange=[0, 1])
-        BBPF = Parameter('blanket_breeder_packing_fraction',
-                         valuerange=[0, 1])
-        BMPF = Parameter('blanket_multiplier_packing_fraction',
-                         valuerange=[0, 1])
-        BMF = Parameter('blanket_multiplier_fraction',
-                        valuerange=[0, 1])
-        BBF = Parameter('blanket_breeder_fraction',
-                        valuerange=[0, 1])
-        BSF = Parameter('blanket_structural_fraction',
-                        valuerange=[0, 1])
-        # BCF = 1 - BMF - BBF - BSF (blanket_coolant_fraction)
+    def __del__(self):
+        # ensure that no container is left dangling
+        self.stop_container()
 
-        self.params = [FWT, FWAM, FWSM, FWCM, BSM, BBM,
-                       BMM, BCM, BBEF, BBPF, BMPF, BMF, BBF, BSF]
-        self.numparams = len(self.params)
+    def start_container(self):
+        running_containers = [c for c in self.docker.containers.list()
+                              if self.container_name in c.image.tags]
+
+        if len(running_containers) != 0:
+            # do not start container if one is already running
+            self.container = running_containers[0]
+            print('Connecting to existing container %s' % self.container.id)
+            return
+
+        # key is container port, value is host port
+        port_binding = {'8080/tcp': self.port}
+
+        self.container = self.docker.containers.run(
+            self.container_name, detach=True, remove=True, ports=port_binding)
+        print('Started new container %s' % self.container.id)
+
+        time.sleep(self.spin_up_time)
+
+    def stop_container(self):
+        if self.container is not None:
+            print('Stopping container %s' % self.container.id)
+            self.container.stop()
+            self.container = None
+
+    def request_tbr(self, params):
+        response = requests.get(self.request_url, params=params)
+        return json.loads(response.content) if response.ok else None
 
     def perform_sample(self, savefile="default.csv", verb=True):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
+
+        param_values = self.domain.gen_data_frame(
+            self.sampling_strategy, self.numsamples)
+        results = pd.DataFrame(data={
+            'tbr': [-1.] * self.numsamples,
+            'tbr_error': [-1.] * self.numsamples,
+        })
+
+        self.start_container()
+
+        for i in range(self.numsamples):
+            print("Performing sample %d of %d" % (i + 1, self.numsamples))
+            response = self.request_tbr(param_values.iloc[i].to_dict())
+
+            if response is not None:
+                results.iloc[i]['tbr',
+                                'tbr_error'] = response['tbr'], response['tbr_error']
+
+            if verb:
+                print(results.iloc[i]['tbr'])
+
+        merged = param_values.join(results)
+
         savedir = "ATE/tests/output/"
         savefile = savedir + savefile
-        self.paramvalues = np.matrix(
-            [param.gen_uniform(self.numsamples) for param in self.params])
+        merged.to_csv(savefile)
 
-        dockerchk = subprocess.Popen(['docker', 'ps'], stdout=subprocess.PIPE)
-        dockerlist = dockerchk.communicate()
-        if "openmcworkshop/find-tbr" not in str(dockerlist):
-            os.system(
-                "docker run -p 8080:8080 -i openmcworkshop/find-tbr > /dev/null 2>&1 &")
-            if verb:
-                print("Starting openmcworkshop/find-tbr docker container")
-        else:
-            if verb:
-                print("openmcworkshop/find-tbr docker container already running")
-
-        output = []
-        for i in range(self.numsamples):
-            print("Performing sample " + str(i+1) +
-                  " of " + str(self.numsamples))
-            runinput = self.paramvalues[:, i]
-
-            reqstr = "http://localhost:8080/find_tbr_model_sphere_with_firstwall?"
-            for j in range(self.numparams):
-                reqstr += self.params[j].name + "=" + runinput.item(j) + "&"
-
-            # print(reqstr)
-            r = requests.get(reqstr)
-            output += [json.loads(r.text)]  # Forms a list of dictionaries
-            if verb:
-                print(output[i]['tbr'])
-
-        with open(savefile, 'w', encoding='utf8', newline='') as output_file:
-            dict_writer = csv.DictWriter(
-                output_file, fieldnames=output[0].keys())
-            dict_writer.writeheader()
-            dict_writer.writerows(output)
+        self.stop_container()
