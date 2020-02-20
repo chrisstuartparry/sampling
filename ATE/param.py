@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 class Parameter:
     '''
     Holds name, acceptable values, (and sampling distribution) for an input parameter.
@@ -12,22 +15,11 @@ class Parameter:
             self.val = values
             self.discrete = True
 
-    def gen_uniform(self, num):
-        '''
-        Generates appropriate uniform random data (either discrete or cont) for parameter.
-        '''
-
-        from numpy.random import randint, uniform
-
+    def gen(self, strategy, num):
         if self.discrete:
-            scope = len(self.val)
-            if num == 1:
-                return self.val[randint(scope)]
-            else:
-                return [self.val[randint(scope)] for i in range(num)]
-
+            return strategy.gen_discrete(self, num)
         else:
-            return uniform(self.val[0], self.val[1], num)
+            return strategy.gen_continuous(self, num)
 
 
 class Domain:
@@ -70,7 +62,11 @@ class Domain:
         self.numparams = len(self.params)
 
     def create_data_frame(self):
-        from pandas import DataFrame
-        return DataFrame(
+        return pd.DataFrame(
             columns=[param.name for param in self.params]
         )
+
+    def gen_data_frame(self, strategy, num):
+        data = {param.name: param.gen(strategy, num)
+                for param in self.params}
+        return pd.DataFrame(data, columns=[param.name for param in self.params])
