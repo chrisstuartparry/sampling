@@ -5,6 +5,9 @@ import requests
 import json
 import csv
 import subprocess
+import os
+
+from .file import CSVFile
 
 
 class Samplerun:
