@@ -14,12 +14,12 @@ class Samplerun:
     Holds sampling methods and data for TBR docker run.
     '''
 
-    def __init__(self, numsamples, domain, sampling_strategy, port=8080, container_name="openmcworkshop/find-tbr:latest", spin_up_time=5):
+    def __init__(self, n_samples, domain, sampling_strategy, port=8080, container_name="openmcworkshop/find-tbr:latest", spin_up_time=5):
         '''
         Collects sampling parameters
         '''
-        assert (numsamples > 0), "Input error, nonpositive number of samples."
-        self.numsamples = numsamples
+        assert (n_samples > 0), "Input error, nonpositive number of samples."
+        self.n_samples = n_samples
         self.domain = domain
         self.sampling_strategy = sampling_strategy
         self.tbr = []
@@ -63,23 +63,23 @@ class Samplerun:
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
-    def perform_sample(self, savefile="default.csv", savedir="output/", verb=True):
+    def perform_sample(self, out_file="default.csv", out_dir="output/", verb=True):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
 
         param_values = self.domain.gen_data_frame(
-            self.sampling_strategy, self.numsamples)
+            self.sampling_strategy, self.n_samples)
         results = pd.DataFrame(data={
-            'tbr': [-1.] * self.numsamples,
-            'tbr_error': [-1.] * self.numsamples,
-            'sim_time': [-1.] * self.numsamples
+            'tbr': [-1.] * self.n_samples,
+            'tbr_error': [-1.] * self.n_samples,
+            'sim_time': [-1.] * self.n_samples
         })
 
         self.start_container()
 
-        for i in range(self.numsamples):
-            print("Performing sample %d of %d" % (i + 1, self.numsamples))
+        for i in range(self.n_samples):
+            print("Performing sample %d of %d" % (i + 1, self.n_samples))
             tic = time.time()
             response = self.request_tbr(param_values.iloc[i].to_dict())
             toc = time.time()
@@ -95,7 +95,7 @@ class Samplerun:
 
         merged = param_values.join(results)
 
-        savepath = os.path.join(savedir, savefile)
-        merged.to_csv(savepath)
+        out_path = os.path.join(out_dir, out_file)
+        merged.to_csv(out_path)
 
         self.stop_container()
