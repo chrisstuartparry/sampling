@@ -2,6 +2,9 @@ import pandas as pd
 
 
 def transform_dataset(df, domain):
+    '''
+    Transform data set to encode discrete columns into one-hot format.
+    '''
     one_hot = pd.get_dummies(df, drop_first=True)
     column_map = [param.transform_columns() for param in domain.params]
     zero_columns = [column for columns in column_map for column in columns]
