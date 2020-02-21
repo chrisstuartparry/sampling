@@ -1,9 +1,10 @@
 import pandas as pd
 
 
-def transform_dataset(df, domain):
+def encode_data_frame(df, domain):
     '''
-    Transform data set to encode discrete columns into one-hot format.
+    Encode data frame into format suitable for regression.
+    This maps continuous columns with identity, and one-hot-encodes discrete columns.
     '''
     one_hot = pd.get_dummies(df, drop_first=True)
     column_map = [param.transform_columns() for param in domain.params]
@@ -16,7 +17,7 @@ def transform_dataset(df, domain):
 
 def x_y_split(df):
     '''
-    Split transformed data set into regression inputs (X) and outputs (y).
+    Split encoded data frame into regression inputs (X) and outputs (y).
     '''
     y_params = ['tbr', 'tbr_error']
     drop_params = ['sim_time']
