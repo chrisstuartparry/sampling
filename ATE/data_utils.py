@@ -12,3 +12,15 @@ def transform_dataset(df, domain):
         if column not in one_hot.columns:
             one_hot[column] = 0.
     return one_hot
+
+
+def x_y_split(df):
+    '''
+    Split transformed data set into regression inputs (X) and outputs (y).
+    '''
+    y_params = ['tbr', 'tbr_error']
+    drop_params = ['sim_time']
+
+    X_params = list(set(df.columns.tolist()) - set(y_params + drop_params))
+
+    return df[X_params].copy(), df[y_params].copy()
