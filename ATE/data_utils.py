@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def encode_data_frame(df, domain):
@@ -15,13 +16,19 @@ def encode_data_frame(df, domain):
     return one_hot
 
 
-def x_y_split(df):
+def x_y_split(df, drop_invalid=True):
     '''
     Split encoded data frame into regression inputs (X) and outputs (y).
     '''
     y_params = ['tbr', 'tbr_error']
     drop_params = ['sim_time']
-
     X_params = list(set(df.columns.tolist()) - set(y_params + drop_params))
 
-    return df[X_params].copy(), df[y_params].copy()
+    df_copy = df.copy()
+
+    if drop_invalid:
+        df_copy[y_params] = df_copy[y_params].replace(-1., np.nan)
+        df_copy = df_copy.dropna()
+
+    X, y = df_copy[X_params].copy(), df_copy[y_params].copy()
+    return X, y
