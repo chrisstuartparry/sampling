@@ -25,9 +25,9 @@ class UniformSamplingStrategy:
 
         return uniform(param.val[0], param.val[1], num).tolist()
 
-    def gen_sum(self, param, num):
+    def gen_sum(self, group, num):
         '''
         Generates appropriate uniform random data for a group of parameters.
         '''
 
-        return param.total * dirichlet(ones(4), size=num)
+        return group.total * dirichlet(ones(group.size), size=num)

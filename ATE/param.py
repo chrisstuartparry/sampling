@@ -66,6 +66,7 @@ class SumParameterGroup(Parameter):
         Parameter.__init__(self, name)
         self.names = names
         self.total = total
+        self.size = len(names)
 
     def gen(self, strategy, num):
         '''

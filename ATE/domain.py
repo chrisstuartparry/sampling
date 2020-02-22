@@ -13,7 +13,7 @@ class Domain:
         Generates array of input parameters for model in use.
         '''
         FWT = ContinuousParameter('firstwall_thickness', 0, 20)
-        FWAM = DiscreteParameter('firstwall_amour_material', ['tungsten'])
+        FWAM = DiscreteParameter('firstwall_armour_material', ['tungsten'])
         FWSM = DiscreteParameter(
             'firstwall_structural_material', ['SiC', 'eurofer'])
         FWCM = DiscreteParameter(
@@ -38,8 +38,13 @@ class Domain:
                                                       'blanket_coolant_fraction'
                                                       ], 1)
 
+        FWFS = SumParameterGroup('firstwall_fractions', ['firstwall_armour_fraction',
+                                                         'firstwall_structural_fraction',
+                                                         'firstwall_coolant_fraction'
+                                                         ], 1)
+
         self.params = [FWT, FWAM, FWSM, FWCM, BLT, BSM, BBM,
-                       BMM, BCM, BBEF, BBPF, BMPF, BFS]
+                       BMM, BCM, BBEF, BBPF, BMPF, BFS, FWFS]
         self.numparams = len(self.params)
         self.fixed_params = {}
 
