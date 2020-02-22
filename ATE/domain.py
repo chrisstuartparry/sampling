@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .param import ContinuousParameter, DiscreteParameter
+from .param import Parameter, ContinuousParameter, DiscreteParameter, SumParameterGroup
 
 
 class Domain:
@@ -32,13 +32,14 @@ class Domain:
         BBPF = ContinuousParameter('blanket_breeder_packing_fraction', 0, 1)
         BMPF = ContinuousParameter(
             'blanket_multiplier_packing_fraction', 0, 1)
-        BMF = ContinuousParameter('blanket_multiplier_fraction', 0, 1)
-        BBF = ContinuousParameter('blanket_breeder_fraction', 0, 1)
-        BSF = ContinuousParameter('blanket_structural_fraction', 0, 1)
-        BCF = ContinuousParameter('blanket_coolant_fraction', 0, 1)
+        BFS = SumParameterGroup('blanket_fractions', ['blanket_multiplier_fraction',
+                                                      'blanket_breeder_fraction',
+                                                      'blanket_structural_fraction',
+                                                      'blanket_coolant_fraction'
+                                                      ], 1)
 
         self.params = [FWT, FWAM, FWSM, FWCM, BLT, BSM, BBM,
-                       BMM, BCM, BBEF, BBPF, BMPF, BMF, BBF, BSF, BCF]
+                       BMM, BCM, BBEF, BBPF, BMPF, BFS]
         self.numparams = len(self.params)
         self.fixed_params = {}
 
@@ -63,15 +64,17 @@ class Domain:
         '''
         Generate data frame containing requested number of rows using specified sampling strategy.
         '''
-        data = {param.name: self.gen_param_values(param, strategy, num)
-                for param in self.params}
-        return pd.DataFrame(data, columns=[param.name for param in self.params])
+        data = {}
+        for param in self.params:
+            data.update(self.gen_param_values(param, strategy, num))
+
+        return pd.DataFrame(data)
 
     def fix_param(self, param, value):
         '''
         Fix model parameter to a constant value, overriding the sampling strategy.
         '''
-        self.fixed_params[param] = value
+        self.fixed_params[param] = param.fix(value)
 
     def unfix_param(self, param):
         '''

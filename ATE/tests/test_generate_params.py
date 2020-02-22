@@ -1,6 +1,5 @@
 from .. import UniformSamplingStrategy, Domain
 import numpy as np
-import os
 
 
 def test_generate_params():

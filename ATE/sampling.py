@@ -1,4 +1,5 @@
-from numpy.random import randint, uniform
+from numpy import ones
+from numpy.random import randint, uniform, dirichlet
 
 
 class UniformSamplingStrategy:
@@ -23,3 +24,10 @@ class UniformSamplingStrategy:
         '''
 
         return uniform(param.val[0], param.val[1], num).tolist()
+
+    def gen_sum(self, param, num):
+        '''
+        Generates appropriate uniform random data for a group of parameters.
+        '''
+
+        return param.total * dirichlet(ones(4), size=num)

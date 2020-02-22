@@ -20,7 +20,10 @@ class DiscreteParameter(Parameter):
         '''
         Generate requested number of values using the provided sampling strategy.
         '''
-        return strategy.gen_discrete(self, num)
+        return {self.name: strategy.gen_discrete(self, num)}
+
+    def fix(self, value):
+        return {self.name: value}
 
     def transform_columns(self):
         '''
@@ -42,10 +45,40 @@ class ContinuousParameter(Parameter):
         '''
         Generate requested number of values using the provided sampling strategy.
         '''
-        return strategy.gen_continuous(self, num)
+        return {self.name: strategy.gen_continuous(self, num)}
+
+    def fix(self, value):
+        return {self.name: value}
 
     def transform_columns(self):
         '''
         Get column names for transformed representation.
         '''
         return [self.name]
+
+
+class SumParameterGroup(Parameter):
+    '''
+    Holds name and sampling distribution for a group of continuous input parameters that sum to a constant total.
+    '''
+
+    def __init__(self, name, names, total):
+        Parameter.__init__(self, name)
+        self.names = names
+        self.total = total
+
+    def gen(self, strategy, num):
+        '''
+        Generate requested number of values using the provided sampling strategy.
+        '''
+        generated = strategy.gen_sum(self, num)
+        return {name: generated[:, i].tolist() for i, name in enumerate(self.names)}
+
+    def fix(self, value):
+        return value
+
+    def transform_columns(self):
+        '''
+        Get column names for transformed representation.
+        '''
+        return self.names
