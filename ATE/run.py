@@ -82,13 +82,15 @@ class Samplerun:
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
-    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True):
+    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True, param_values=None):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
 
-        param_values = self.domain.gen_data_frame(
-            self.sampling_strategy, self.n_samples)
+        if param_values is None:
+            param_values = self.domain.gen_data_frame(
+                self.sampling_strategy, self.n_samples)
+
         results = pd.DataFrame(data={
             'tbr': [-1.] * self.n_samples,
             'tbr_error': [-1.] * self.n_samples,
