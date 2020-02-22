@@ -14,7 +14,7 @@ class Samplerun:
     Holds sampling methods and data for TBR docker run.
     '''
 
-    def __init__(self, n_samples, domain, sampling_strategy, port=8080, container_name='openmcworkshop/find-tbr:latest', spin_up_time=5):
+    def __init__(self, n_samples, domain, sampling_strategy, no_docker=False, port=8080, container_name='openmcworkshop/find-tbr:latest', spin_up_time=5):
         '''
         Collects sampling parameters
         '''
@@ -24,6 +24,7 @@ class Samplerun:
         self.domain = domain
         self.sampling_strategy = sampling_strategy
         self.tbr = []
+        self.no_docker = no_docker
         self.port = port
         self.request_url = 'http://localhost:%d/find_tbr_model_sphere_with_firstwall' % self.port
         self.container_name = container_name
@@ -42,6 +43,9 @@ class Samplerun:
         '''
         Start docker container with the TBR web service. Or attach to one if it's already running.
         '''
+        if self.no_docker:
+            return
+
         running_containers = [c for c in self.docker.containers.list()
                               if self.container_name in c.image.tags]
 
