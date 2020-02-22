@@ -6,7 +6,7 @@ class UniformSamplingStrategy:
     Samples data from the uniform distribution
     '''
 
-    def gen_discrete(self, param, num, parents):
+    def gen_discrete(self, param, num):
         '''
         Generates appropriate uniform random data for a discrete parameter.
         '''
@@ -17,7 +17,7 @@ class UniformSamplingStrategy:
         else:
             return [param.val[randint(scope)] for i in range(num)]
 
-    def gen_continuous(self, param, num, parents):
+    def gen_continuous(self, param, num):
         '''
         Generates appropriate uniform random data for a continuous parameter.
         '''

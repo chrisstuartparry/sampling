@@ -3,44 +3,55 @@ import pandas as pd
 
 class Parameter:
     '''
-    Holds name, acceptable values, (and sampling distribution) for an input parameter.
+    All parameters derive from this class.
     '''
 
-    def __init__(self, name, valuerange=[], values=[], sums_to=None, sums_with=[]):
+    def __init__(self, name):
         self.name = name
-        if len(values) == 0:
-            self.val = valuerange
-            self.discrete = False
-            self.sums_to = sums_to
-            self.sums_with = sums_with
-        else:
-            self.val = values
-            self.discrete = True
-            self.sums_to = None
-            self.sums_with = []
 
-    def gen(self, strategy, num, parents):
+
+class DiscreteParameter(Parameter):
+    '''
+    Holds name and acceptable values for a discrete input parameter.
+    '''
+
+    def __init__(self, name, values):
+        Parameter.__init__(self, name)
+        self.val = values
+
+    def gen(self, strategy, num):
         '''
         Generate requested number of values using the provided sampling strategy.
         '''
-        if self.discrete:
-            return strategy.gen_discrete(self, num, parents)
-        else:
-            if self.sums_to is None:
-                return strategy.gen_continuous(self, num, parents)
-            else:
-                parent_records = zip(*[parents[parent.name]
-                                       for parent in self.sums_with])
-                return [self.sums_to - sum(parent_record) for parent_record in parent_records]
+        return strategy.gen_discrete(self, num)
 
     def transform_columns(self):
         '''
         Get column names for transformed representation.
         '''
-        if self.discrete:
-            return ['%s_%s' % (self.name, val) for val in self.val]
-        else:
-            return [self.name]
+        return ['%s_%s' % (self.name, val) for val in self.val]
+
+
+class ContinuousParameter(Parameter):
+    '''
+    Holds name and sampling distribution for a continuous input parameter.
+    '''
+
+    def __init__(self, name, low, high):
+        Parameter.__init__(self, name)
+        self.val = [low, high]
+
+    def gen(self, strategy, num):
+        '''
+        Generate requested number of values using the provided sampling strategy.
+        '''
+        return strategy.gen_continuous(self, num)
+
+    def transform_columns(self):
+        '''
+        Get column names for transformed representation.
+        '''
+        return [self.name]
 
 
 class Domain:
@@ -52,40 +63,30 @@ class Domain:
         '''
         Generates array of input parameters for model in use.
         '''
-        FWT = Parameter('firstwall_thickness',
-                        valuerange=[0, 20])
-        FWAM = Parameter('firstwall_amour_material',
-                         values=['tungsten'])
-        FWSM = Parameter('firstwall_structural_material',
-                         values=['SiC', 'eurofer'])
-        FWCM = Parameter('firstwall_coolant_material',
-                         values=['H2O', 'He', 'D2O'])
-        BLT = Parameter('blanket_thickness',
-                        valuerange=[0, 500])
-        BSM = Parameter('blanket_structural_material',
-                        values=['SiC', 'eurofer'])
-        BBM = Parameter('blanket_breeder_material',
-                        values=['Li4SiO4', 'Li2TiO3'])
-        BMM = Parameter('blanket_multiplier_material',
-                        values=['Be', 'Be12Ti'])
-        BCM = Parameter('blanket_coolant_material',
-                        values=['H2O', 'He', 'D2O'])
-        BBEF = Parameter(
-            'blanket_breeder_li6_enrichment_fraction', valuerange=[0, 1])
-        BBPF = Parameter('blanket_breeder_packing_fraction',
-                         valuerange=[0, 1])
-        BMPF = Parameter('blanket_multiplier_packing_fraction',
-                         valuerange=[0, 1])
-        BMF = Parameter('blanket_multiplier_fraction',
-                        valuerange=[0, 1])
-        BBF = Parameter('blanket_breeder_fraction',
-                        valuerange=[0, 1])
-        BSF = Parameter('blanket_structural_fraction',
-                        valuerange=[0, 1])
-        BCF = Parameter('blanket_coolant_fraction',
-                        valuerange=[0, 1],
-                        sums_to=1,
-                        sums_with=[BMF, BBF, BSF])
+        FWT = ContinuousParameter('firstwall_thickness', 0, 20)
+        FWAM = DiscreteParameter('firstwall_amour_material', ['tungsten'])
+        FWSM = DiscreteParameter(
+            'firstwall_structural_material', ['SiC', 'eurofer'])
+        FWCM = DiscreteParameter(
+            'firstwall_coolant_material', ['H2O', 'He', 'D2O'])
+        BLT = ContinuousParameter('blanket_thickness', 0, 500)
+        BSM = DiscreteParameter(
+            'blanket_structural_material', ['SiC', 'eurofer'])
+        BBM = DiscreteParameter('blanket_breeder_material', [
+                                'Li4SiO4', 'Li2TiO3'])
+        BMM = DiscreteParameter(
+            'blanket_multiplier_material', ['Be', 'Be12Ti'])
+        BCM = DiscreteParameter(
+            'blanket_coolant_material', ['H2O', 'He', 'D2O'])
+        BBEF = ContinuousParameter(
+            'blanket_breeder_li6_enrichment_fraction', 0, 1)
+        BBPF = ContinuousParameter('blanket_breeder_packing_fraction', 0, 1)
+        BMPF = ContinuousParameter(
+            'blanket_multiplier_packing_fraction', 0, 1)
+        BMF = ContinuousParameter('blanket_multiplier_fraction', 0, 1)
+        BBF = ContinuousParameter('blanket_breeder_fraction', 0, 1)
+        BSF = ContinuousParameter('blanket_structural_fraction', 0, 1)
+        BCF = ContinuousParameter('blanket_coolant_fraction', 0, 1)
 
         self.params = [FWT, FWAM, FWSM, FWCM, BLT, BSM, BBM,
                        BMM, BCM, BBEF, BBPF, BMPF, BMF, BBF, BSF, BCF]
@@ -100,23 +101,21 @@ class Domain:
             columns=[param.name for param in self.params]
         )
 
-    def gen_param_values(self, param, strategy, num, parents):
+    def gen_param_values(self, param, strategy, num):
         '''
         Generate requested number of values for a single parameter using specified sampling strategy.
         '''
         if param.name in self.fixed_params:
             return self.fixed_params[param.name]
         else:
-            return param.gen(strategy, num, parents)
+            return param.gen(strategy, num)
 
     def gen_data_frame(self, strategy, num):
         '''
         Generate data frame containing requested number of rows using specified sampling strategy.
         '''
-        data = {param.name: self.gen_param_values(param, strategy, num, {})
-                for param in self.params if param.sums_to is None}
-        data.update({param.name: self.gen_param_values(param, strategy, num, data)
-                     for param in self.params if param.sums_to is not None})
+        data = {param.name: self.gen_param_values(param, strategy, num)
+                for param in self.params}
         return pd.DataFrame(data, columns=[param.name for param in self.params])
 
     def fix_param(self, param, value):
