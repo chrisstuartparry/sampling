@@ -1,0 +1,3 @@
+Bootstrap: docker
+From: openmcworkshop/find-tbr:latest
+IncludeCmd: yes # Use the CMD as runscript instead of ENTRYPOINT
