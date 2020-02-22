@@ -14,15 +14,11 @@ class Samplerun:
     Holds sampling methods and data for TBR docker run.
     '''
 
-    def __init__(self, n_samples, domain, sampling_strategy, no_docker=False, port=8080, container_name='openmcworkshop/find-tbr:latest', spin_up_time=5):
+    def __init__(self, no_docker=False, port=8080, container_name='openmcworkshop/find-tbr:latest', spin_up_time=5):
         '''
         Collects sampling parameters
         '''
-        assert (n_samples > 0), 'Input error, nonpositive number of samples.'
 
-        self.n_samples = n_samples
-        self.domain = domain
-        self.sampling_strategy = sampling_strategy
         self.tbr = []
         self.no_docker = no_docker
         self.port = port
@@ -82,25 +78,29 @@ class Samplerun:
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
-    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True, param_values=None):
+    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True, param_values=None, domain=None, sampling_strategy=None, n_samples=None):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
+        assert (n_samples is None or n_samples >
+                0), 'Input error, nonpositive number of samples.'
 
         if param_values is None:
-            param_values = self.domain.gen_data_frame(
-                self.sampling_strategy, self.n_samples)
+            param_values = domain.gen_data_frame(
+                sampling_strategy, n_samples)
+        else:
+            n_samples = param_values.shape[0]
 
         results = pd.DataFrame(data={
-            'tbr': [-1.] * self.n_samples,
-            'tbr_error': [-1.] * self.n_samples,
-            'sim_time': [-1.] * self.n_samples
+            'tbr': [-1.] * n_samples,
+            'tbr_error': [-1.] * n_samples,
+            'sim_time': [-1.] * n_samples
         })
 
         self.start_container()
 
-        for i in range(self.n_samples):
-            print('Performing sample %d of %d' % (i + 1, self.n_samples))
+        for i in range(n_samples):
+            print('Performing sample %d of %d' % (i + 1, n_samples))
             tic = time.time()
             response = self.request_tbr(param_values.iloc[i].to_dict())
             toc = time.time()
