@@ -11,12 +11,13 @@ def test_samplerun():
     Sets up uniform geemeration of data points and csv output.
     '''
 
-    numsamples = 5
-    domain = Domain()
-    sampling_strategy = UniformSamplingStrategy()
+    n_samples = 5
 
-    run1 = Samplerun(numsamples, domain, sampling_strategy)
-    run1.perform_sample(out_file='100uniform.csv')
+    run1 = Samplerun()
+    run1.perform_sample(out_file='100uniform.csv',
+                        n_samples=n_samples,
+                        domain=Domain(),
+                        sampling_strategy=UniformSamplingStrategy())
 
 
 if __name__ == '__main__':
