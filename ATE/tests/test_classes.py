@@ -10,11 +10,11 @@ def test_samplerun():
 	Sets up uniform geemeration of data points and csv output.
 	"""
 
-	numsamples = 100
+	numsamples = 20000
 	
 	run1 = Samplerun(numsamples)
 	run1.setup_model()
-	run1.perform_sample(savefile="100uniform.csv")
+	run1.perform_sample(savefile="20000uniform.csv")
 		
 	
 

@@ -1,0 +1,2 @@
+docker: Error response from daemon: driver failed programming external connectivity on endpoint stupefied_edison (493a9a62029014a85fb6c697989386fc204abc65fee1abd48b19f9c69cb49a56): Bind for 0.0.0.0:8080 failed: port is already allocated.
+time="2020-02-21T00:40:34Z" level=error msg="error waiting for container: context canceled"
