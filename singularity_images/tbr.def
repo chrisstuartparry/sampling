@@ -1,0 +1,73 @@
+Bootstrap: docker
+From: ubuntu:latest
+Stage: build
+
+%setup
+    mkdir ${SINGULARITY_ROOTFS}/app
+
+%files
+    requirements.txt /app/requirements.txt
+
+%environment
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export OPENMC_CROSS_SECTIONS=/nndc-b7.1-hdf5/cross_sections.xml
+
+%post
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export DEBIAN_FRONTEND=noninteractive
+    export JOBS=8
+    apt-get update --allow-insecure-repositories
+    apt-get install -y locales
+    echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    locale-gen en_US.UTF-8
+    apt-get install -y gfortran g++ cmake libhdf5-dev git python3-dev python3-pip python3-setuptools ipython3 python3-tk unzip imagemagick hdf5-tools paraview eog wget firefox dpkg libxkbfile1 mpich libmpich-dev openmpi-bin libopenmpi-dev libblas-dev liblapack-dev libsilo-dev libcgal-dev software-properties-common
+    add-apt-repository ppa:freecad-maintainers/freecad-stable
+    apt-get update && apt-get install -y libocc*dev occ* libtbb-dev
+    pip3 install --upgrade pip
+    pip3 install -r /app/requirements.txt
+    git clone https://github.com/njoy/NJOY2016 /opt/NJOY2016 && cd /opt/NJOY2016 && mkdir build && cd build && cmake -Dstatic=on .. && make -j$JOBS 2>/dev/null && make install
+    rm /usr/bin/python && ln -s /usr/bin/python3 /usr/bin/python
+    export MOAB_BRANCH=Version5.1.0
+    export MOAB_REPO=https://bitbucket.org/fathomteam/moab/
+    export MOAB_INSTALL_DIR=/MOAB/
+    export DAGMC_BRANCH=develop
+    export DAGMC_REPO=https://github.com/svalinn/dagmc
+    export DAGMC_INSTALL_DIR=/DAGMC/
+    set -ex
+    mkdir /MOAB && cd /MOAB && git clone -b $MOAB_BRANCH $MOAB_REPO && mkdir build && cd build && cmake ../moab -DENABLE_HDF5=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$MOAB_INSTALL_DIR -DENABLE_PYMOAB=ON && make -j$JOBS && make test install && cd pymoab && python3 setup.py install
+    export LD_LIBRARY_PATH=/MOAB//lib:
+    mkdir /DAGMC && cd /DAGMC && git clone -b $DAGMC_BRANCH $DAGMC_REPO && mkdir build && cd build && cmake ../dagmc -DBUILD_TALLY=ON -DCMAKE_INSTALL_PREFIX=$DAGMC_INSTALL_DIR -DMOAB_DIR=$MOAB_INSTALL_DIR -DBUILD_STATIC_LIBS=OFF && make install && rm -rf $HOME/DAGMC/dagmc
+    export LD_LIBRARY_PATH=/DAGMC//lib:/MOAB//lib:
+    export FC=mpif90
+    export CC=mpicc
+    cd /opt && git clone https://github.com/makeclean/openmc.git && cd openmc && git checkout dlopen_source && mkdir build && cd build && cmake -Ddagmc=ON .. && make -j$JOBS && make install
+    cd / && git clone https://github.com/johnnonweiler/occ_faceter.git && cd occ_faceter && git checkout refactor_faceting && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=.. && make-j$JOBS && make install && cp /occ_faceter/bin/steps2h5m /bin
+    cd /opt/openmc && python3 setup.py develop
+    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/plotter/
+    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/plotter/:/opt/openmc/build/bin/
+    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/plotter/:/opt/openmc/build/bin/:/DAGMC/bin/
+    cd / && git clone https://github.com/openmc-dev/data.git
+    python3 /data/convert_nndc71.py
+    export OPENMC_CROSS_SECTIONS=/nndc-b7.1-hdf5/cross_sections.xml
+    rm ENDF-B-VII.1-atomic_relax.zip
+    rm ENDF-B-VII.1-neutron-293.6K.tar.gz
+    rm ENDF-B-VII.1-photoat.zip
+    rm ENDF-B-VII.1-tsl.tar.gz
+    rm -rf nndc-b7.1-ace/
+    rm -rf nndc-b7.1-endf/
+    git clone https://github.com/Shimwell/simple_sphere_TBR_study.git /app/simple_sphere_TBR_study
+
+%runscript
+    cd /app/simple_sphere_TBR_study && python3 /app/simple_sphere_TBR_study/flask_api_for_tbr_simulation.py
+
+%labels
+    Author petr.manek.19@ucl.ac.uk
+    Version v0.0.1
+
+%help
+    This is a container for calculating Tritium Breeding Ratio (TBR) for the UKAEA group project.
+

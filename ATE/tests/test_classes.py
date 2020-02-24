@@ -1,23 +1,24 @@
-"""
+'''
 Simple tests and data generation.
-"""
+'''
 
-from ATE import Samplerun, Parameter
+from .. import UniformSamplingStrategy, Domain, Samplerun
 import os
 
+
 def test_samplerun():
-	"""
-	Sets up uniform geemeration of data points and csv output.
-	"""
+    '''
+    Sets up uniform geemeration of data points and csv output.
+    '''
 
-	numsamples = 20000
-	
-	run1 = Samplerun(numsamples)
-	run1.setup_model()
-	run1.perform_sample(savefile="20000uniform.csv")
-		
-	
+    n_samples = 5
 
-if __name__== "__main__":
-	test_samplerun()
+    run1 = Samplerun()
+    run1.perform_sample(out_file='100uniform.csv',
+                        n_samples=n_samples,
+                        domain=Domain(),
+                        sampling_strategy=UniformSamplingStrategy())
 
+
+if __name__ == '__main__':
+    test_samplerun()
