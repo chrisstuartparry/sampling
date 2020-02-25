@@ -41,11 +41,11 @@ def c_d_y_split(df, drop_invalid=True):
     y_params = ['tbr', 'tbr_error']
     drop_params = ['sim_time']
     d_params = ['firstwall_armour_material',
-                'firstwall_structural_material'
-                'firstwall_coolant_material'
-                'blanket_structural_material'
-                'blanket_breeder_material'
-                'blanket_multiplier_material'
+                'firstwall_structural_material',
+                'firstwall_coolant_material',
+                'blanket_structural_material',
+                'blanket_breeder_material',
+                'blanket_multiplier_material',
                 'blanket_coolant_material']
     c_params = list(set(df.columns.tolist()) - set(y_params + drop_params + d_params))
 
