@@ -21,7 +21,7 @@ def x_y_split(df, drop_invalid=True):
     Split encoded data frame into regression inputs (X) and outputs (y).
     '''
     y_params = ['tbr', 'tbr_error']
-    drop_params = ['sim_time']
+    drop_params = ['sim_time','']
     X_params = list(set(df.columns.tolist()) - set(y_params + drop_params))
 
     df_copy = df.copy()
@@ -39,7 +39,7 @@ def c_d_y_split(df, drop_invalid=True):
     Split encoded data frame into continuous (c) and discrete (d) inputs, and outputs (y).
     '''
     y_params = ['tbr', 'tbr_error']
-    drop_params = ['sim_time']
+    drop_params = ['sim_time','']
     d_params = ['firstwall_armour_material',
                 'firstwall_structural_material',
                 'firstwall_coolant_material',
