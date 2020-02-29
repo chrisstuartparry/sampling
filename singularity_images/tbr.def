@@ -44,7 +44,7 @@ Stage: build
     export LD_LIBRARY_PATH=/DAGMC//lib:/MOAB//lib:
     export FC=mpif90
     export CC=mpicc
-    cd /opt && git clone https://github.com/makeclean/openmc.git && cd openmc && git checkout dlopen_source && mkdir build && cd build && cmake -Ddagmc=ON .. && make -j$JOBS && make install
+    cd /opt && git clone https://github.com/makeclean/openmc.git && cd openmc && git checkout dlopen_source && git checkout 030a5873257d926eb3e02dd51ebe1ce062eac7a0 && mkdir build && cd build && cmake -Ddagmc=ON -DDAGMC_DIR=/DAGMC/lib/cmake .. && make -j$JOBS && make install
     cd / && git clone https://github.com/johnnonweiler/occ_faceter.git && cd occ_faceter && git checkout refactor_faceting && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=.. && make-j$JOBS && make install && cp /occ_faceter/bin/steps2h5m /bin
     cd /opt/openmc && python3 setup.py develop
     export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/plotter/
