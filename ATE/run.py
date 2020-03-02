@@ -116,7 +116,9 @@ class Samplerun:
 
         merged = param_values.join(results)
 
-        out_path = os.path.join(out_dir, out_file)
-        merged.to_csv(out_path, index=False)
+        if out_file is not None:
+            out_path = os.path.join(out_dir, out_file)
+            merged.to_csv(out_path, index=False)
 
         self.stop_container()
+        return merged
