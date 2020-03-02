@@ -12,28 +12,39 @@ class Domain:
         '''
         Generates array of input parameters for model in use.
         '''
-        FWT = ContinuousParameter('firstwall_thickness', 0, 20)
-        FWAM = DiscreteParameter('firstwall_armour_material', ['tungsten'])
-        FWSM = DiscreteParameter('firstwall_structural_material', ['SiC', 'eurofer'])
-        FWCM = DiscreteParameter('firstwall_coolant_material', ['H2O', 'He', 'D2O'])
-        BLT = ContinuousParameter('blanket_thickness', 0, 500)
-        BSM = DiscreteParameter('blanket_structural_material', ['SiC', 'eurofer'])
-        BBM = DiscreteParameter('blanket_breeder_material', ['Li4SiO4', 'Li2TiO3'])
-        BMM = DiscreteParameter('blanket_multiplier_material', ['Be', 'Be12Ti'])
-        BCM = DiscreteParameter('blanket_coolant_material', ['H2O', 'He', 'D2O'])
-        BBEF = ContinuousParameter('blanket_breeder_li6_enrichment_fraction', 0, 1)
-        BBPF = ContinuousParameter('blanket_breeder_packing_fraction', 0, 1)
-        BMPF = ContinuousParameter('blanket_multiplier_packing_fraction', 0, 1)
-        BFS = SumParameterGroup('blanket_fractions', ['blanket_multiplier_fraction',
-                                                      'blanket_breeder_fraction',
-                                                      'blanket_structural_fraction',
-                                                      'blanket_coolant_fraction'
-                                                      ], 1)
+        FWT = ContinuousParameter('firstwall_thickness', 'FW thickness', 0, 20)
+        FWAM = DiscreteParameter(
+            'firstwall_armour_material', 'FW armour', ['tungsten'])
+        FWSM = DiscreteParameter(
+            'firstwall_structural_material', 'FW structure', ['SiC', 'eurofer'])
+        FWCM = DiscreteParameter(
+            'firstwall_coolant_material', 'FW coolant', ['H2O', 'He', 'D2O'])
+        BLT = ContinuousParameter(
+            'blanket_thickness', 'Blanket thickness', 0, 500)
+        BSM = DiscreteParameter('blanket_structural_material',
+                                'Blanket structure', ['SiC', 'eurofer'])
+        BBM = DiscreteParameter('blanket_breeder_material', 'Blanket breeder', [
+                                'Li4SiO4', 'Li2TiO3'])
+        BMM = DiscreteParameter(
+            'blanket_multiplier_material', 'Blanket multiplier', ['Be', 'Be12Ti'])
+        BCM = DiscreteParameter(
+            'blanket_coolant_material', 'Blanket coolant', ['H2O', 'He', 'D2O'])
+        BBEF = ContinuousParameter(
+            'blanket_breeder_li6_enrichment_fraction', 'Blanket breeder Li6 frac.', 0, 1)
+        BBPF = ContinuousParameter(
+            'blanket_breeder_packing_fraction', 'Blanket breeder packing', 0, 1)
+        BMPF = ContinuousParameter(
+            'blanket_multiplier_packing_fraction', 'Blanket multiplier packing', 0, 1)
+        BFS = SumParameterGroup('blanket_fractions', 'Blanket fractions', ['blanket_multiplier_fraction',
+                                                                           'blanket_breeder_fraction',
+                                                                           'blanket_structural_fraction',
+                                                                           'blanket_coolant_fraction'
+                                                                           ], 1)
 
-        FWFS = SumParameterGroup('firstwall_fractions', ['firstwall_armour_fraction',
-                                                         'firstwall_structural_fraction',
-                                                         'firstwall_coolant_fraction'
-                                                         ], 1)
+        FWFS = SumParameterGroup('firstwall_fractions', 'FW fractions', ['firstwall_armour_fraction',
+                                                                         'firstwall_structural_fraction',
+                                                                         'firstwall_coolant_fraction'
+                                                                         ], 1)
 
         self.params = [FWT, FWAM, FWSM, FWCM, BLT, BSM, BBM,
                        BMM, BCM, BBEF, BBPF, BMPF, BFS, FWFS]

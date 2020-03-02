@@ -3,8 +3,9 @@ class Parameter:
     All parameters derive from this class.
     '''
 
-    def __init__(self, name):
+    def __init__(self, name, human_readable_name):
         self.name = name
+        self.human_readable_name = human_readable_name
 
 
 class DiscreteParameter(Parameter):
@@ -12,8 +13,8 @@ class DiscreteParameter(Parameter):
     Holds name and acceptable values for a discrete input parameter.
     '''
 
-    def __init__(self, name, values):
-        Parameter.__init__(self, name)
+    def __init__(self, name, human_readable_name, values):
+        Parameter.__init__(self, name, human_readable_name)
         self.val = values
 
     def gen(self, strategy, num):
@@ -37,8 +38,8 @@ class ContinuousParameter(Parameter):
     Holds name and sampling distribution for a continuous input parameter.
     '''
 
-    def __init__(self, name, low, high):
-        Parameter.__init__(self, name)
+    def __init__(self, name, human_readable_name, low, high):
+        Parameter.__init__(self, name, human_readable_name)
         self.val = [low, high]
 
     def gen(self, strategy, num):
@@ -62,8 +63,8 @@ class SumParameterGroup(Parameter):
     Holds name and sampling distribution for a group of continuous input parameters that sum to a constant total.
     '''
 
-    def __init__(self, name, names, total):
-        Parameter.__init__(self, name)
+    def __init__(self, name, human_readable_name, names, total):
+        Parameter.__init__(self, name, human_readable_name)
         self.names = names
         self.total = total
         self.size = len(names)
