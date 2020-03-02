@@ -30,20 +30,25 @@ class Domain:
         BCM = DiscreteParameter(
             'blanket_coolant_material', 'Blanket coolant', ['H2O', 'He', 'D2O'])
         BBEF = ContinuousParameter(
-            'blanket_breeder_li6_enrichment_fraction', 'Blanket breeder Li6 frac.', 0, 1)
+            'blanket_breeder_li6_enrichment_fraction', 'Blanket breeder Li6 enrichment', 0, 1)
         BBPF = ContinuousParameter(
             'blanket_breeder_packing_fraction', 'Blanket breeder packing', 0, 1)
         BMPF = ContinuousParameter(
             'blanket_multiplier_packing_fraction', 'Blanket multiplier packing', 0, 1)
-        BFS = SumParameterGroup('blanket_fractions', 'Blanket fractions', ['blanket_multiplier_fraction',
-                                                                           'blanket_breeder_fraction',
-                                                                           'blanket_structural_fraction',
-                                                                           'blanket_coolant_fraction'
+        BFS = SumParameterGroup('blanket_fractions', 'Blanket fractions', [('blanket_multiplier_fraction', 'Blanket multiplier %'),
+                                                                           ('blanket_breeder_fraction',
+                                                                            'Blanket breeder %'),
+                                                                           ('blanket_structural_fraction',
+                                                                            'Blanket structure %'),
+                                                                           ('blanket_coolant_fraction',
+                                                                            'Blanket coolant %')
                                                                            ], 1)
 
-        FWFS = SumParameterGroup('firstwall_fractions', 'FW fractions', ['firstwall_armour_fraction',
-                                                                         'firstwall_structural_fraction',
-                                                                         'firstwall_coolant_fraction'
+        FWFS = SumParameterGroup('firstwall_fractions', 'FW fractions', [('firstwall_armour_fraction', 'FW armour %'),
+                                                                         ('firstwall_structural_fraction',
+                                                                          'FW structure %'),
+                                                                         ('firstwall_coolant_fraction',
+                                                                          'FW coolant %')
                                                                          ], 1)
 
         self.params = [FWT, FWAM, FWSM, FWCM, BLT, BSM, BBM,

@@ -65,7 +65,9 @@ class SumParameterGroup(Parameter):
 
     def __init__(self, name, human_readable_name, names, total):
         Parameter.__init__(self, name, human_readable_name)
-        self.names = names
+        self.names = [name for (name, human_name) in names]
+        self.human_readable_names = [
+            human_name for (name, human_name) in names]
         self.total = total
         self.size = len(names)
 
