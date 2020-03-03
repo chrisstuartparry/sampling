@@ -78,7 +78,7 @@ class Samplerun:
         response = requests.get(self.request_url, params=params)
         return json.loads(response.content) if response.ok else None
 
-    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True, param_values=None, domain=None, sampling_strategy=None, n_samples=None):
+    def perform_sample(self, out_file='default.csv', out_dir='output/', verb=True, param_values=None, domain=None, sampling_strategy=None, n_samples=None, progress_handler=None):
         '''
         Interfaces with Docker to perform sample and saves to csv file
         '''
@@ -113,6 +113,9 @@ class Samplerun:
 
             if verb:
                 print(results.iloc[i]['tbr'])
+
+            if progress_handler is not None:
+                progress_handler(i, n_samples)
 
         merged = param_values.join(results)
 
